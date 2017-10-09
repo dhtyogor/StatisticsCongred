@@ -342,4 +342,7 @@ public class CongredAgent {
     }
 
 
+    public static void updateTest(Context context) {
+
+    }
 }

@@ -1,8 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
-apply plugin: 'com.github.dhtyogor.android-maven'
-
-group='com.github.dhtyogor'
 
 android {
     compileSdkVersion 25
