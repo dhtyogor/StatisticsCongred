@@ -1,19 +1,4 @@
 package com.congred.statistics;
-
-import android.app.Activity;
-import android.app.ActivityManager;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Build;
-import android.os.Environment;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,6 +11,20 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import android.app.Activity;
+import android.app.ActivityManager;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Environment;
+import android.telephony.TelephonyManager;
+import com.congred.statistics.CongredAgent.SendPolicy;
 
 class CommonUtil {
     private static String USER_ID = "";
@@ -441,6 +440,15 @@ class CommonUtil {
     }
 
 
+    static void saveDefaultReportPolicy(Context context, int i) {
+        SharedPrefUtil spu = new SharedPrefUtil(context);
+        spu.setValue("DefaultReportPolicy", i);
+    }
+
+        static int getlocalDefaultReportPolicy(Context context) {
+        SharedPrefUtil spu = new SharedPrefUtil(context);
+        return (int) spu.getValue("DefaultReportPolicy", 1);// 默认POST_NOW
+    }
 
 
 
@@ -479,10 +487,7 @@ class CommonUtil {
 //    }
 //
 //
-//    static int getlocalDefaultReportPolicy(Context context) {
-//        SharedPrefUtil spu = new SharedPrefUtil(context);
-//        return (int) spu.getValue("DefaultReportPolicy", 1);// 默认POST_NOW
-//    }
+
 //
 //
 //
@@ -640,11 +645,6 @@ class CommonUtil {
 
 
 
-//
-//    static void saveDefaultReportPolicy(Context context, int i) {
-//        SharedPrefUtil spu = new SharedPrefUtil(context);
-//        spu.setValue("DefaultReportPolicy", i);
-//    }
 
 //
 //    static long getSessionContinueMillis(Context context) {

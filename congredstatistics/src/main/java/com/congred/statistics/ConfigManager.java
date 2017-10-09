@@ -1,14 +1,12 @@
 package com.congred.statistics;
-
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.content.Context;
 import android.util.Log;
 
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 class ConfigManager {
     private Context context;
@@ -45,7 +43,8 @@ class ConfigManager {
                         int updateonlywifi = jsonObject1.optInt("updateonlywifi");
                         int product_id = jsonObject1.optInt("product_id");
                         int sessionmillis = jsonObject1.optInt("sessionmillis");
-                        int reportpolicy = jsonObject1.optInt("reportpolicy");
+                        int reportpolicy = jsonObject1.optInt("reportpolicy");//// 数据发送模式 0,下次启动发送 1实时发送
+                        CommonUtil.saveDefaultReportPolicy(context, reportpolicy);// 保存在本地
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

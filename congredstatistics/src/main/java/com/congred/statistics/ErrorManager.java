@@ -15,11 +15,9 @@ package com.congred.statistics;
 
 import android.content.Context;
 import android.util.Log;
-
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

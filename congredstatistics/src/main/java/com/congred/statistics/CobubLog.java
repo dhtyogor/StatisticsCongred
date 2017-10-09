@@ -15,7 +15,6 @@
 package com.congred.statistics;
 
 import android.util.Log;
-
 import com.congred.statistics.CongredAgent.LogLevel;
 
 /**

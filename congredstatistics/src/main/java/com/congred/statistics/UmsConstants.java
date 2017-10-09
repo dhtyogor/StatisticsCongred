@@ -15,6 +15,7 @@
 package com.congred.statistics;
 
 import com.congred.statistics.CongredAgent.LogLevel;
+import com.congred.statistics.CongredAgent.SendPolicy;
 
 public class UmsConstants {
     public  static String BASE_URL = "";
@@ -35,6 +36,8 @@ public class UmsConstants {
     public static String fileSep = "@_@";
 
     public static String LIB_VERSION = "1.0";
+
+    public static SendPolicy mReportPolicy = SendPolicy.POST_NOW;
 
 }
 

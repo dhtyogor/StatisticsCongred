@@ -1,16 +1,18 @@
 package com.congred.statistics;
 
-import android.content.Context;
-import android.util.Log;
-
-import com.lzy.okgo.OkGo;
-import com.lzy.okgo.callback.StringCallback;
-import com.lzy.okgo.model.Response;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.content.Context;
+import android.util.Log;
 
-import java.lang.ref.WeakReference;
+import com.congred.statistics.bean.ClientUsingLogData;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.callback.StringCallback;
+import com.lzy.okgo.model.Response;
 
 class UsinglogManager {
 	private static WeakReference<Context> contextWR;
@@ -77,13 +79,17 @@ class UsinglogManager {
         try {
             info = prepareUsinglogJSON(start_millis, end_millis, duration, pageName);
 //            CommonUtil.saveInfoToFile("activityInfo", info, context);
-            Log.e("xxx", "onPause:===== "+info );
-            OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.USINGLOG_URL).upJson(info).execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    Log.e("xxx", "onSuccess:==页面信息== "+response.body() );
-                }
-            });
+            if(CommonUtil.getlocalDefaultReportPolicy(context) == 0){
+                //db
+                savaClienUsingLogDaoUtilsDB(start_millis, end_millis, duration, pageName);
+            }else{
+                OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.USINGLOG_URL).upJson(info).execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        Log.e("xxx", "onSuccess:==页面信息== "+response.body() );
+                    }
+                });
+            }
         } catch (JSONException e) {
             CobubLog.e(UmsConstants.LOG_TAG, e);
         }
@@ -123,5 +129,25 @@ class UsinglogManager {
                 CobubLog.e(UmsConstants.LOG_TAG, e);
             }
         }
+    }
+
+
+    private  void savaClienUsingLogDaoUtilsDB(String start_millis, String end_millis, String duration, String activities) {
+        ClienUsingLogDaoUtils clienUsingLogDaoUtils = new ClienUsingLogDaoUtils(contextWR.get());
+        List<ClientUsingLogData> list = new ArrayList<>();
+        ClientUsingLogData clientUsingLogData = new ClientUsingLogData();
+        clientUsingLogData.setSession_id(session_id);//会话ID（客户端）
+        clientUsingLogData.setStart_millis(start_millis);//开始使用时间（格式：2017-05-25 16:00:04）
+        clientUsingLogData.setEnd_millis(end_millis);//结束使用时间（格式：2017-05-25 16:00:04）
+        clientUsingLogData.setDuration(Integer.parseInt(duration));//持续时长（单位：秒）
+        clientUsingLogData.setActivities(activities);//页面名称
+        clientUsingLogData.setAppkey(AppInfo.getAppKey(contextWR.get()));
+        clientUsingLogData.setVersion(AppInfo.getAppVersion(contextWR.get()));//版本
+        clientUsingLogData.setDeviceid(DeviceInfo.getDeviceId());//终端ID
+        clientUsingLogData.setUseridentifier(CommonUtil.getUserIdentifier(contextWR.get()));//用户编号
+        clientUsingLogData.setLib_version(UmsConstants.LIB_VERSION);//SDK版本
+        clientUsingLogData.setInsertdate(end_millis);//更新时间（格式：2017-05-25 16:00:04）
+        list.add(clientUsingLogData);
+        clienUsingLogDaoUtils.insertClientUsingLogData(list);
     }
 }
