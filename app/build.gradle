@@ -1,6 +1,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao'
 
+
+group='com.github.dhtyogor'
+
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
