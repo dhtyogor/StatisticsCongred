@@ -1,6 +1,16 @@
 package com.congred.statistics;
 
 import android.content.Context;
+import android.util.Log;
+
+import com.congred.statistics.bean.ClientUsingLogData;
+import com.congred.statistics.bean.EventData;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.callback.StringCallback;
+import com.lzy.okgo.model.Response;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
 
@@ -65,6 +75,9 @@ public class CongredAgent {
         // registerActivityCallback(context);
     }
 
+    /**
+     * 启动信息
+     * **/
     static void postClientData() {
         ClientdataManager cm = new ClientdataManager(contextWR.get());
         cm.postClientData();
@@ -76,15 +89,13 @@ public class CongredAgent {
             return;
         }
         updateContent(context);
-        // 定时发送模式
         CobubLog.i(UmsConstants.LOG_TAG, CongredAgent.class, "Call onResume()");
         if (usinglogManager == null)
             usinglogManager = new UsinglogManager(contextWR.get());
         usinglogManager.onResume(contextWR.get());
     }
 
-    public static void onFragmentResume(Context context,
-                                        final String PageName) {
+    public static void onFragmentResume(Context context,final String PageName) {
         if (!INIT) {
             CobubLog.e(UmsConstants.LOG_TAG, CongredAgent.class, "sdk is not init!");
             return;
@@ -236,6 +247,98 @@ public class CongredAgent {
         CobubLog.i(UmsConstants.LOG_TAG, CongredAgent.class, "Call update()");
         UpdateManager um = new UpdateManager(contextWR.get());
         um.postUpdate();
+    }
+
+
+    /**
+     * Setting data transmission mode 设置数据发送模式
+     *
+     * @param context
+     * @param sendPolicy {@link SendPolicy}
+     */
+    public static void setDefaultReportPolicy(Context context,SendPolicy sendPolicy) {
+        updateContent(context);
+        UmsConstants.mReportPolicy = sendPolicy;
+        int type = 1;
+
+        if (sendPolicy == SendPolicy.POST_ONSTART) {
+            type = 0;
+            getClienUsingLogData();
+            getEventData();
+        }
+        if (sendPolicy == SendPolicy.POST_INTERVAL) {
+            type = 2;
+        }
+        SharedPrefUtil spu = new SharedPrefUtil(contextWR.get());
+        spu.setValue("DefaultReportPolicy", type);
+
+        CobubLog.i(UmsConstants.LOG_TAG, CongredAgent.class, "setDefaultReportPolicy = " + String.valueOf(sendPolicy));
+
+    }
+
+
+    private static void getClienUsingLogData(){
+        final ClienUsingLogDaoUtils clienUsingLogDaoUtils = new ClienUsingLogDaoUtils(contextWR.get());
+        for (ClientUsingLogData clientUsingLogData : clienUsingLogDaoUtils.queryAllClientUsingLogDataData()) {
+            final ClientUsingLogData clientUsingLogDataID =  clienUsingLogDaoUtils.queryClientUsingLogDataById(clientUsingLogData.getId());
+            JSONObject jsonUsinglog = new JSONObject();
+            try {
+                jsonUsinglog.put("session_id", clientUsingLogDataID.getSession_id());//会话ID（客户端）
+                jsonUsinglog.put("start_millis", clientUsingLogDataID.getStart_millis());//开始使用时间（格式：2017-05-25 16:00:04）
+                jsonUsinglog.put("end_millis", clientUsingLogDataID.getEnd_millis());//结束使用时间（格式：2017-05-25 16:00:04）
+                jsonUsinglog.put("duration", clientUsingLogDataID.getDuration());//持续时长（单位：秒）
+                jsonUsinglog.put("activities", clientUsingLogDataID.getActivities());//页面名称
+                jsonUsinglog.put("appkey", clientUsingLogDataID.getAppkey());
+                jsonUsinglog.put("version", clientUsingLogDataID.getVersion());//版本
+                jsonUsinglog.put("deviceid", clientUsingLogDataID.getDeviceid());//终端ID
+                jsonUsinglog.put("useridentifier", clientUsingLogDataID.getUseridentifier());//用户编号
+                jsonUsinglog.put("lib_version", clientUsingLogDataID.getLib_version());//SDK版本
+                jsonUsinglog.put("insertdate", clientUsingLogDataID.getInsertdate());//更新时间（格式：2017-05-25 16:00:04）
+                OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.USINGLOG_URL).upJson(jsonUsinglog).execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        Log.e("xxx", "onSuccess:==页面信息db== "+response.body() );
+                        ClientUsingLogData culd = new ClientUsingLogData();
+                        culd.setId(clientUsingLogDataID.getId());
+                        clienUsingLogDaoUtils.deleteClientUsingLogData(culd);
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private static void getEventData(){
+        final EventDaoUtils eventDaoUtils = new EventDaoUtils(contextWR.get());
+        for (EventData evenData : eventDaoUtils.queryAllEventData()) {
+            final EventData clientUsingLogDataID =  eventDaoUtils.queryEventDataById(evenData.getId());
+            JSONObject localJSONObject = new JSONObject();
+            try {
+                localJSONObject.put("deviceid", clientUsingLogDataID.getDeviceid());//终端ID
+                localJSONObject.put("event", clientUsingLogDataID.getEvent());//事件名称（标示）
+                localJSONObject.put("label", clientUsingLogDataID.getLabel());//标签（分组标示）
+                localJSONObject.put("clientdate", clientUsingLogDataID.getClientdate());//客户端日期（格式：2017-05-25 16:00:04）
+                localJSONObject.put("productkey", clientUsingLogDataID.getProductkey());//产品密钥（同appkey）
+                localJSONObject.put("num", clientUsingLogDataID.getNum());//事件发生次数
+                localJSONObject.put("version", clientUsingLogDataID.getVersion());//版本
+                localJSONObject.put("useridentifier", clientUsingLogDataID.getUseridentifier());//用户编号
+                localJSONObject.put("session_id", clientUsingLogDataID.getSession_id());//会话ID（客户端）
+                localJSONObject.put("lib_version", clientUsingLogDataID.getLib_version());//sdk版本
+                localJSONObject.put("insertdate", clientUsingLogDataID.getInsertdate());//更新日期（格式：2017-05-25 16:00:04）
+                OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.EVENT_URL).upJson(localJSONObject).execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        Log.e("xxx", "onSuccess:==自定义事件>>== "+response.body() );
+                        EventData ed = new EventData();
+                        ed.setId(clientUsingLogDataID.getId());
+                        eventDaoUtils.deleteEventData(ed);
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 

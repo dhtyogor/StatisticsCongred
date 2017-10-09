@@ -1,8 +1,14 @@
 package com.congred.statistics;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
+
 import android.content.Context;
 import android.util.Log;
+
+import com.congred.statistics.bean.ClientUsingLogData;
+import com.congred.statistics.bean.EventData;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
@@ -56,20 +62,41 @@ class EventManager {
 
     public void postEventInfo() {
         try {
-            JSONObject localJSONObject = prepareEventJSON();
-//            JSONObject postdata = new JSONObject();
-//            postdata.put("data", new JSONArray().put(localJSONObject));
-            Log.e("xxx", "onSuccess:==事件== "+localJSONObject );
-            OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.EVENT_URL).upJson(localJSONObject).execute(new StringCallback() {
-                @Override
-                public void onSuccess(Response<String> response) {
-                    Log.e("xxx", "onSuccess:==自定义事件== "+response.body() );
-                }
-            });
+            if(CommonUtil.getlocalDefaultReportPolicy(context) == 0){
+                //db
+                saveEventDB();
+            }else{
+                JSONObject localJSONObject = prepareEventJSON();
+                OkGo.<String>post(UmsConstants.BASE_URL + UmsConstants.EVENT_URL).upJson(localJSONObject).execute(new StringCallback() {
+                    @Override
+                    public void onSuccess(Response<String> response) {
+                        Log.e("xxx", "onSuccess:==自定义事件== "+response.body() );
+                    }
+                });
+            }
         } catch (Exception e) {
             CobubLog.e(UmsConstants.LOG_TAG, EventManager.class, e.toString());
             return;
         }
+    }
+
+    private void saveEventDB(){
+        EventDaoUtils eventDaoUtils = new EventDaoUtils(context);
+        List<EventData> list = new ArrayList<>();
+        EventData clientUsingLogData = new EventData();
+        clientUsingLogData.setDeviceid(DeviceInfo.getDeviceId());//终端ID
+        clientUsingLogData.setEvent(eventid);//事件名称（标示）
+        clientUsingLogData.setLabel(label);//标签（分组标示）
+        clientUsingLogData.setClientdate(DeviceInfo.getDeviceTime());//客户端日期（格式：2017-05-25 16:00:04）
+        clientUsingLogData.setProductkey(AppInfo.getAppKey(context));//产品密钥（同appkey）
+        clientUsingLogData.setNum(Integer.parseInt(acc));//事件发生次数
+        clientUsingLogData.setVersion(AppInfo.getAppVersion(context));//版本
+        clientUsingLogData.setUseridentifier(CommonUtil.getUserIdentifier(context));//用户编号
+        clientUsingLogData.setSession_id(CommonUtil.getSessionid(context));//会话ID（客户端）
+        clientUsingLogData.setLib_version(UmsConstants.LIB_VERSION);//sdk版本
+        clientUsingLogData.setInsertdate(DeviceInfo.getDeviceTime());//更新日期（格式：2017-05-25 16:00:04）
+        list.add(clientUsingLogData);
+        eventDaoUtils.insertEventData(list);
     }
 
 

@@ -1,22 +1,27 @@
 package com.congred.statistics;
 
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+/**
+ * Created by Tao on 2017/9/25.
+ */
+
+public class SecondActivity extends AppCompatActivity{
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView tv = (TextView) findViewById(R.id.tv);
-        tv.setOnClickListener(new View.OnClickListener() {
+        TextView textView = (TextView) findViewById(R.id.tv);
+        textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,SecondActivity.class));
+                startActivity(new Intent(SecondActivity.this,MainActivity.class));
             }
         });
     }
@@ -25,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         CongredAgent.onResume(this);
-        CongredAgent.update(this);
+//        CongredAgent.update(this);
     }
 
     @Override
@@ -33,5 +38,4 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         CongredAgent.onPause(this);
     }
-
 }

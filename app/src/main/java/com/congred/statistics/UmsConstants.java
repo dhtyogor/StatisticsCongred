@@ -37,6 +37,8 @@ public class UmsConstants {
 
     public static String LIB_VERSION = "1.0";
 
+    public static SendPolicy mReportPolicy = SendPolicy.POST_NOW;
+
 }
 
 

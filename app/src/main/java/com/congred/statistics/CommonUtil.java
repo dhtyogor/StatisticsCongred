@@ -440,6 +440,15 @@ class CommonUtil {
     }
 
 
+    static void saveDefaultReportPolicy(Context context, int i) {
+        SharedPrefUtil spu = new SharedPrefUtil(context);
+        spu.setValue("DefaultReportPolicy", i);
+    }
+
+        static int getlocalDefaultReportPolicy(Context context) {
+        SharedPrefUtil spu = new SharedPrefUtil(context);
+        return (int) spu.getValue("DefaultReportPolicy", 1);// 默认POST_NOW
+    }
 
 
 
@@ -478,10 +487,7 @@ class CommonUtil {
 //    }
 //
 //
-//    static int getlocalDefaultReportPolicy(Context context) {
-//        SharedPrefUtil spu = new SharedPrefUtil(context);
-//        return (int) spu.getValue("DefaultReportPolicy", 1);// 默认POST_NOW
-//    }
+
 //
 //
 //
@@ -639,11 +645,6 @@ class CommonUtil {
 
 
 
-//
-//    static void saveDefaultReportPolicy(Context context, int i) {
-//        SharedPrefUtil spu = new SharedPrefUtil(context);
-//        spu.setValue("DefaultReportPolicy", i);
-//    }
 
 //
 //    static long getSessionContinueMillis(Context context) {
